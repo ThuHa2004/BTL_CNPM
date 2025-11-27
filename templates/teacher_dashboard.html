@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Giảng Viên</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styling (Giống sinh viên) */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(180deg, #6f6af8 0%, #5a54d6 100%);
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            flex-grow: 1;
+        }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-links li a:hover, .nav-links li a.active {
+            background-color: rgba(255,255,255,0.15);
+            color: white;
+            border-left: 4px solid #fff;
+        }
+
+        .nav-links li a i {
+            width: 25px;
+            margin-right: 10px;
+        }
+
+        .logout-btn {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logout-btn a {
+            color: #ffcccc;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .logout-btn a:hover {
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px 40px;
+            transition: 0.3s;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .user-info {
+            color: #6f6af8;
+            font-weight: 500;
+        }
+
+        /* Section Animation */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .content-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats Cards */
+        .card-stats {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            margin-right: 20px;
+        }
+
+        .icon-primary { background-color: #e3f2fd; color: #2196f3; }
+        .icon-success { background-color: #e8f5e9; color: #4caf50; }
+        .icon-warning { background-color: #fff3e0; color: #ff9800; }
+        .icon-danger { background-color: #ffebee; color: #f44336; }
+
+        .stats-info h3 { margin: 0; font-size: 1.8rem; font-weight: bold; color: #333; }
+        .stats-info p { margin: 0; color: #777; font-size: 0.9rem; }
+
+        /* Tables */
+        .table-custom {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .table-custom thead {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-chalkboard-teacher me-2"></i> Giảng Viên
+        </div>
+        <ul class="nav-links">
+            <li><a onclick="switchTab('dashboard', this)" class="active"><i class="fas fa-chart-pie"></i> Trang chủ</a></li>
+            <li><a onclick="switchTab('info', this)"><i class="fas fa-id-card"></i> Thông tin cá nhân</a></li>
+            <li><a onclick="switchTab('schedule', this)"><i class="fas fa-calendar-week"></i> Lịch dạy</a></li>
+            <li><a onclick="switchTab('reports', this)"><i class="fas fa-file-alt"></i> Báo cáo & Xuất Excel</a></li>
+        </ul>
+        <div class="logout-btn">
+            <a href="/logout"><i class="fas fa-sign-out-alt me-2"></i> Đăng xuất</a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <h4 class="m-0 fw-bold" id="page-title">Trang chủ</h4>
+            <div class="user-info">
+                {{ user.ho_ten }} <i class="fas fa-user-circle ms-2"></i>
+            </div>
+        </div>
+
+        <!-- 1. DASHBOARD -->
+        <div id="dashboard" class="content-section active">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="card-stats">
+                        <div class="icon-box icon-primary"><i class="fas fa-chalkboard"></i></div>
+                        <div class="stats-info"><h3 id="stat-classes">0</h3><p>Lớp phụ trách</p></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card-stats">
+                        <div class="icon-box icon-success"><i class="fas fa-calendar-check"></i></div>
+                        <div class="stats-info"><h3 id="stat-sessions">0</h3><p>Số buổi dạy</p></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card-stats">
+                        <div class="icon-box icon-danger"><i class="fas fa-user-slash"></i></div>
+                        <div class="stats-info"><h3 id="stat-absent">0</h3><p>Lượt vắng</p></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card-stats">
+                        <div class="icon-box icon-warning"><i class="fas fa-clock"></i></div>
+                        <div class="stats-info"><h3>--</h3><p>Tiết dạy tiếp theo</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. THÔNG TIN GIẢNG VIÊN (Có nút chỉnh sửa) -->
+        <div id="info" class="content-section">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title text-primary fw-bold m-0">Hồ sơ giảng viên</h5>
+                        <button class="btn btn-outline-primary btn-sm" onclick="openEditTeacherModal()">
+                            <i class="fas fa-edit me-1"></i> Cập nhật thông tin
+                        </button>
+                    </div>
+                    <div id="info-content" class="row">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. LỊCH DẠY -->
+        <div id="schedule" class="content-section">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3 fw-bold">Lịch giảng dạy</h5>
+                    <div class="table-responsive table-custom">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Môn học</th>
+                                    <th>Lớp</th>
+                                    <th>Ngày dạy</th>
+                                    <th>Thời gian</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedule-body">
+                                <tr><td colspan="4" class="text-center py-3">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. SINH VIÊN VẮNG -->
+        <div id="absences" class="content-section">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3 fw-bold">Danh sách sinh viên vắng mới nhất</h5>
+                    <div class="table-responsive table-custom">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Mã SV</th>
+                                    <th>Họ tên</th>
+                                    <th>Môn học</th>
+                                    <th>Ngày nghỉ</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody id="absences-body">
+                                <tr><td colspan="5" class="text-center py-3">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. BÁO CÁO & EXCEL -->
+        <div id="reports" class="content-section">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title fw-bold m-0">Báo cáo điểm danh</h5>
+                        <div class="d-flex gap-2">
+                            <select id="select-report-class" class="form-select" style="min-width: 250px;">
+                                <option value="">-- Chọn buổi học --</option>
+                            </select>
+                            <button onclick="exportExcel()" class="btn btn-success text-white">
+                                <i class="fas fa-file-excel me-2"></i>Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive table-custom">
+                        <table class="table table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Mã SV</th>
+                                    <th>Họ tên</th>
+                                    <th>Lớp</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thời gian</th>
+                                    <th style="width: 250px;">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-body">
+                                <tr><td colspan="6" class="text-center py-5 text-muted">Vui lòng chọn một buổi học để xem báo cáo chi tiết.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL 1: CHỈNH SỬA THÔNG TIN GIẢNG VIÊN -->
+    <div class="modal fade" id="editTeacherModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cập nhật thông tin giảng viên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTeacherForm">
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="edit-teacher-email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" id="edit-teacher-phone" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTeacherProfile()">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CẬP NHẬT GHI CHÚ ĐIỂM DANH -->
+    <div class="modal fade" id="editNoteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cập nhật lý do vắng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="note-ma-sv">
+                    <input type="hidden" id="note-ma-lh">
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú</label>
+                        <input type="text" class="form-control" id="note-content" placeholder="Ví dụ: Có phép, Ốm, Xe hỏng...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="saveNote()">Lưu ghi chú</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const teacherId = "{{ user.ma_giao_vien }}";
+        let editModal;
+        let noteModal;
+
+        // --- HÀM CHUYỂN TAB ---
+        function switchTab(sectionId, element) {
+            document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('page-title').innerText = element.innerText;
+
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+
+            if (sectionId === 'dashboard') loadDashboardStats();
+            if (sectionId === 'info') loadTeacherInfo();
+            if (sectionId === 'schedule') loadTeacherSchedule();
+            if (sectionId === 'absences') loadTeacherAbsences();
+            if (sectionId === 'reports') loadReportOptions();
+        }
+
+        // --- 1. DASHBOARD STATS ---
+        async function loadDashboardStats() {
+            try {
+                const res = await fetch(`/api/teacher/dashboard/${teacherId}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    document.getElementById('stat-classes').innerText = data.stats.total_classes || 0;
+                    document.getElementById('stat-sessions').innerText = data.stats.total_sessions || 0;
+                    document.getElementById('stat-absent').innerText = data.stats.absent_records || 0;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- 2. THÔNG TIN GIẢNG VIÊN ---
+        async function loadTeacherInfo() {
+            try {
+                const res = await fetch(`/teacher/info/${teacherId}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    const gv = data.giao_vien;
+                    document.getElementById('info-content').innerHTML = `
+                        <div class="col-md-6 mb-3"><label class="text-muted small">Mã GV</label><p class="fw-bold fs-5">${teacherId}</p></div>
+                        <div class="col-md-6 mb-3"><label class="text-muted small">Họ tên</label><p class="fw-bold fs-5">${gv.ho_ten}</p></div>
+                        <div class="col-md-6 mb-3"><label class="text-muted small">Email</label><p class="fw-bold text-primary">${gv.email || 'Chưa cập nhật'}</p></div>
+                        <div class="col-md-6 mb-3"><label class="text-muted small">SĐT</label><p class="fw-bold text-primary">${gv.so_dien_thoai || 'Chưa cập nhật'}</p></div>
+                        <div class="col-md-6 mb-3"><label class="text-muted small">Chức vụ</label><p class="fw-bold">${gv.chuc_vu}</p></div>
+                    `;
+
+                    // Fill data vào Modal
+                    document.getElementById('edit-teacher-email').value = gv.email || '';
+                    document.getElementById('edit-teacher-phone').value = gv.so_dien_thoai || '';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Mở Modal Sửa thông tin
+        function openEditTeacherModal() {
+            editModal = new bootstrap.Modal(document.getElementById('editTeacherModal'));
+            editModal.show();
+        }
+
+        // Lưu thông tin giảng viên
+        async function saveTeacherProfile() {
+            const email = document.getElementById('edit-teacher-email').value;
+            const phone = document.getElementById('edit-teacher-phone').value;
+
+            if(!email || !phone) { alert("Vui lòng điền đầy đủ thông tin"); return; }
+
+            try {
+                const res = await fetch(`/teacher/update_info/${teacherId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, so_dien_thoai: phone })
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    alert("Cập nhật thành công!");
+                    editModal.hide();
+                    loadTeacherInfo(); // Tải lại thông tin mới
+                } else {
+                    alert("Lỗi: " + data.message);
+                }
+            } catch (e) {
+                alert("Lỗi kết nối server");
+            }
+        }
+
+        // --- 3. LỊCH DẠY ---
+        async function loadTeacherSchedule() {
+            try {
+                const res = await fetch(`/teacher/classes/${teacherId}`);
+                const data = await res.json();
+                const tbody = document.getElementById('schedule-body');
+                tbody.innerHTML = '';
+                if (data.classes && data.classes.length > 0) {
+                    data.classes.forEach(c => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="fw-bold text-primary">${c.ten_mon_hoc}</td>
+                                <td>${c.ten_lop}</td>
+                                <td>${c.ngay_day}</td>
+                                <td><span class="badge bg-info text-dark">${c.gio_bat_dau} - ${c.gio_ket_thuc}</span></td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3">Chưa có lịch dạy.</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+
+
+        // --- 5. BÁO CÁO & GHI CHÚ ---
+        async function loadReportOptions() {
+            try {
+                const res = await fetch(`/api/teacher/classes-for-report/${teacherId}`);
+                const data = await res.json();
+                const select = document.getElementById('select-report-class');
+                select.innerHTML = '<option value="">-- Chọn buổi học --</option>';
+
+                if (data.classes && data.classes.length > 0) {
+                    data.classes.forEach(c => {
+                        select.innerHTML += `<option value="${c.ma_lich_hoc}">${c.ngay_hoc} - ${c.ten_mon_hoc} (${c.ten_lop})</option>`;
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Khi chọn 1 buổi học -> Load bảng điểm danh chi tiết
+        document.getElementById('select-report-class').addEventListener('change', async function() {
+            const maLichHoc = this.value;
+            const tbody = document.getElementById('report-body');
+            if (!maLichHoc) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Vui lòng chọn một buổi học.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3">Đang tải dữ liệu...</td></tr>';
+            try {
+                const res = await fetch(`/api/teacher/attendance-report/${maLichHoc}`);
+                const data = await res.json();
+                tbody.innerHTML = '';
+
+                if (data.students && data.students.length > 0) {
+                    data.students.forEach(s => {
+                        let badgeClass = 'bg-secondary';
+                        if(s.trang_thai === 'Có mặt') badgeClass = 'bg-success';
+                        if(s.trang_thai === 'Vắng mặt') badgeClass = 'bg-danger';
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${s.ma_sinh_vien}</td>
+                                <td>${s.ho_ten}</td>
+                                <td>${s.ma_lop}</td>
+                                <td><span class="badge ${badgeClass}">${s.trang_thai}</span></td>
+                                <td>${s.thoi_gian_diem_danh || '-'}</td>
+                                <td>
+                                    <span class="me-2">${s.ghi_chu || ''}</span>
+                                    <button class="btn btn-link p-0 text-primary" onclick="openNoteModal('${s.ma_sinh_vien}', '${maLichHoc}', '${s.ghi_chu || ''}')">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Chưa có dữ liệu.</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        });
+
+        // Mở Modal Ghi chú
+        function openNoteModal(maSV, maLH, currentNote) {
+            document.getElementById('note-ma-sv').value = maSV;
+            document.getElementById('note-ma-lh').value = maLH;
+            document.getElementById('note-content').value = currentNote;
+
+            noteModal = new bootstrap.Modal(document.getElementById('editNoteModal'));
+            noteModal.show();
+        }
+
+        // Lưu Ghi chú
+        async function saveNote() {
+            const maSV = document.getElementById('note-ma-sv').value;
+            const maLH = document.getElementById('note-ma-lh').value;
+            const note = document.getElementById('note-content').value;
+
+            try {
+                const res = await fetch('/api/teacher/update-attendance-note', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ma_sinh_vien: maSV,
+                        ma_lich_hoc: maLH,
+                        ghi_chu: note
+                    })
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    noteModal.hide();
+                    // Reload lại bảng để thấy thay đổi
+                    document.getElementById('select-report-class').dispatchEvent(new Event('change'));
+                } else {
+                    alert("Lỗi: " + data.message);
+                }
+            } catch (e) { alert("Lỗi kết nối!"); }
+        }
+
+        // Xuất Excel
+        function exportExcel() {
+            const maLichHoc = document.getElementById('select-report-class').value;
+            if (!maLichHoc) {
+                alert("Vui lòng chọn buổi học cần xuất báo cáo!");
+                return;
+            }
+            window.location.href = `/api/teacher/export-attendance/${maLichHoc}`;
+        }
+
+        // Load dashboard stats on init
+        loadDashboardStats();
+    </script>
+</body>
+</html>

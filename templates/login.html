@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Hệ thống Điểm danh</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header h3 {
+            color: #333;
+            font-weight: bold;
+        }
+        .btn-login {
+            background: #6f6af8;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .btn-login:hover {
+            background: #5a54d6;
+        }
+        .form-control {
+            padding: 12px;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="login-header">
+        <h3>Đăng nhập</h3>
+        <p class="text-muted">Hệ thống điểm danh sinh viên</p>
+    </div>
+
+    <div id="alert-box" class="alert alert-danger d-none"></div>
+
+    <form id="loginForm">
+        <div class="mb-3">
+            <label class="form-label">Tên đăng nhập</label>
+            <input type="text" class="form-control" id="username" placeholder="Nhập tên đăng nhập" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Mật khẩu</label>
+            <input type="password" class="form-control" id="password" placeholder="Nhập mật khẩu" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-login">Đăng nhập</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const alertBox = document.getElementById('alert-box');
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ten_dang_nhap: username,
+                    mat_khau: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Lưu thông tin user vào localStorage để dùng ở frontend nếu cần
+                localStorage.setItem('user', JSON.stringify(data.user));
+                // Chuyển hướng theo server chỉ định (ví dụ: vào dashboard)
+                window.location.href = data.redirect;
+            } else {
+                alertBox.textContent = data.message;
+                alertBox.classList.remove('d-none');
+            }
+        } catch (error) {
+            alertBox.textContent = "Lỗi kết nối server!";
+            alertBox.classList.remove('d-none');
+        }
+    });
+</script>
+
+</body>
+</html>
